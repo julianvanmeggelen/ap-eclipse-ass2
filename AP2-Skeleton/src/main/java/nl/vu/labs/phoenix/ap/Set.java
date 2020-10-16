@@ -20,41 +20,59 @@ public class Set<T extends Comparable<T>> implements SetInterface<T> {
 	@Override
 	public T get() {
 		// TODO Auto-generated method stub
-		return null;
+		return (T) list.retrieve();
 	}
 
 	@Override
 	public boolean remove(T t) {
-		// TODO Auto-generated method stub
-		return false;
+		boolean found = false;
+		while(list.find(t)) {
+			list.remove();
+			found = true;
+		}
+		return found;
 	}
 
 	@Override
 	public int size() {
-		// TODO Auto-generated method stub
-		return 0;
+		return list.size;
 	}
 
 	@Override
 	public SetInterface<T> copy() {
-		// TODO Auto-generated method stub
-		return null;
+		SetInterface<T> result = new Set();
+		while(this.list.goToNext()) {
+			result.add(list.retrieve());//ask ruby
+		}
+		return result;
 	}
 
 	//implement 
 	public SetInterface<T> difference(Set secondSet) {
-        Set result1 = new Set(this);
-        for (int i = 0; i < secondSet.amountOfElements; i++) {
-            result1.removeFromSet(secondSet.identifierAtPos(i));
+		SetInterface<T> result1 = this.copy();
+        while (secondSet.list.goToNext()) {
+            result1.remove(secondSet.get());
         }
         return result1;
     }
-
+	
+  public SetInterface<T> union(SetInterface<T> secondSet) {
+	  	SetInterface<T> result = this.copy();
+        while (secondSet.list.goToNext()) {
+            try {
+                result.add(secondSet.retrieve());
+            } catch (Exception e) {
+                return e;//print errpr
+            }
+        }
+        return result;
+    }
+  
     public SetInterface<T> intersection(Set secondSet) {
-        Set union = this.union(secondSet);
-        Set difference1 = this.difference(secondSet);
-        Set difference2 = secondSet.difference(this);
-        Set result = union.difference(difference1);
+    	SetInterface<T> union = this.union(secondSet);
+    	SetInterface<T> difference1 = this.difference(secondSet);
+    	SetInterface<T> difference2 = secondSet.difference(this);
+    	SetInterface<T> result = union.difference(difference1);
         result = result.difference(difference2);
         return result;
     }

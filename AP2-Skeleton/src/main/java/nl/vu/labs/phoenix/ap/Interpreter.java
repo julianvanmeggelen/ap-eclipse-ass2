@@ -29,45 +29,47 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 		// TODO Implement me
 		Scanner stringScanner = new Scanner(s);
 		stringScanner.useDelimiter("");
-		return null;
+		return statement(stringScanner);
 	}
 
-	void statement(Scanner input) throws APException{
+	T statement(Scanner input) throws APException{
 		//statement = assignment | print statement | comment ;
 		if(nextCharIs(input, '?')){
 			//statement is print statement
-			printStatement(input);
+			return printStatement(input);
 		}else if(nextCharIs(input, '/')){
 			//statement is comment
-			comment(input);
+			return comment(input);
 		}else{
 			//statement is assignment
-			assignment(input);
+			return assignment(input);
 		}
 	}
 
-	void assignment(Scanner input) throws APException{//stores the input in memory
+	T assignment(Scanner input) throws APException{//stores the input in memory
 		//assignment = identifier ’=’ expression <eoln> ;
 		identifier(input);
 		character(input, '=');
 		expression(input);
 		eoln(input);
+		return null;
 	}
 
-	void printStatement(Scanner input) throws APException{//prints sets from memory
+	T printStatement(Scanner input) throws APException{//prints sets from memory
 		//print statement = ’?’ expression <eoln>
 		character(input, '?');
-		expression(input);
+		T set = expression(input);
 		eoln(input);
+		return set;
 	}
 
-	void comment(Scanner input) throws APException{//does nothing
+	T comment(Scanner input) throws APException{//does nothing
 		//comment = ’/’ <a line of text> <eoln> ;
 		character(input, '/');
-		
+		return null;
 	}
 
-	void identifier(Scanner input) throws APException{
+	Identifier identifier(Scanner input) throws APException{
 		//identifier = letter { letter | number }
 		Identifier identifier = new Identifier();
 		if(nextCharIsLetter(input)){
@@ -76,23 +78,24 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 			throw new APException("Identifier must start with a letter");
 		}
 
-		while(nextCharIsLetter(input) || nextCharIsDigit(input){
+		while(nextCharIsLetter(input) || nextCharIsDigit(input)){
 			if(nextCharIsLetter(input)){
 				identifier.addCharacter(letter(input));
 			}else{
-				identifier.addCharacter(number(input));
+				identifier.addCharacter((char) number(input));
 			}
 		}
 		return identifier;
 	}
 
-	void expression(Scanner input) throws APException{
+	T expression(Scanner input) throws APException{
 		//expression = term { additive_operator term } ;
 		term(input);
 		if(nextCharIs(input,'+') || nextCharIs(input,'|') || nextCharIs(input,'-')){//function isadditiveoperator
 			additiveOperator(input);
 			term(input);
 		}
+		return null;
 	}
 
 	void term(Scanner input) throws APException{
@@ -167,8 +170,9 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 		//positive number = not zero { number } ;
 	}
 
-	void number(Scanner input) throws APException{
+	BigInteger number(Scanner input) throws APException{
 		//number = zero | not zero ;
+		return null;
 	}
 
 	void zero(Scanner input) throws APException{

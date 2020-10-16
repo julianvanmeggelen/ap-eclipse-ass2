@@ -46,7 +46,8 @@ public interface SetInterface<T extends Comparable<T>> {
 	
 	*/boolean remove(T t);/*
 		 PRE - 
-		 POST - t is not in the set.
+		 POST - true: -t is removed from the set
+		 	  - false -t was not in the set
 	
 	*/int size();/*
 		PRE - 

@@ -213,7 +213,6 @@ public class ListTest {
         list.insert(b);
         list.insert(c);
         list.insert(d);
-
         // Test on last element
         assertFalse(list.goToNext());
         assertEquals(d, list.retrieve());
