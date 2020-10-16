@@ -47,5 +47,9 @@ public class Identifier implements IdentifierInterface{
 	public char getCharAtIndex(int i){
 		return this.value.charAt(i);
 	}
+	
+	public String toString() {
+		return value.toString();
+	}
 
 }

@@ -32,7 +32,7 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 		return statement(stringScanner);
 	}
 
-	T statement(Scanner input) throws APException{
+	Set statement(Scanner input) throws APException{
 		//statement = assignment | print statement | comment ;
 		if(nextCharIs(input, '?')){
 			//statement is print statement
@@ -46,7 +46,7 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 		}
 	}
 
-	T assignment(Scanner input) throws APException{//stores the input in memory
+	Set assignment(Scanner input) throws APException{//stores the input in memory
 		//assignment = identifier ’=’ expression <eoln> ;
 		identifier(input);
 		character(input, '=');
@@ -55,15 +55,15 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 		return null;
 	}
 
-	T printStatement(Scanner input) throws APException{//prints sets from memory
+	Set printStatement(Scanner input) throws APException{//prints sets from memory
 		//print statement = ’?’ expression <eoln>
 		character(input, '?');
-		T set = expression(input);
+		Set set = expression(input);
 		eoln(input);
 		return set;
 	}
 
-	T comment(Scanner input) throws APException{//does nothing
+	Set comment(Scanner input) throws APException{//does nothing
 		//comment = ’/’ <a line of text> <eoln> ;
 		character(input, '/');
 		return null;
@@ -82,23 +82,38 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 			if(nextCharIsLetter(input)){
 				identifier.addCharacter(letter(input));
 			}else{
-				identifier.addCharacter((char) number(input));
+				identifier.addCharacter((number(input));
 			}
 		}
 		return identifier;
 	}
 
-	T expression(Scanner input) throws APException{
+	Set expression(Scanner input) throws APException{
 		//expression = term { additive_operator term } ;
-		term(input);
-		if(nextCharIs(input,'+') || nextCharIs(input,'|') || nextCharIs(input,'-')){//function isadditiveoperator
-			additiveOperator(input);
-			term(input);
+		Set set1 = term(input);
+		if(nextCharIsAdditiveOperator(input)){
+			char operator = additiveOperator(input);
+			Set set2 = term(input);
+			switch (operator) {
+				case '+':
+					//union
+					return set1.union(set2);
+				case '|':
+					//symmetric difference
+					return set1.symmetricDifference(set2);
+					break;
+				case '-':
+					//difference
+					return set1.difference(set2);
+					break;
+			}
+			
+		}else {
+			return set1;
 		}
-		return null;
 	}
 
-	void term(Scanner input) throws APException{
+	Set term(Scanner input) throws APException{
 		//term = factor { multiplicative_operator factor }
 		factor(input);
 		if(nextCharIs(input, '*')){
@@ -109,44 +124,47 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 
 	Set factor(Scanner input) throws APException{ //returns set
 		//identifier | complex factor | set
+		Set result;
 		if(nextCharIs(input, '(')){
 			//complex_factor
-			complexFactor(input);
+			result = complexFactor(input);
 		}else if(nextCharIsDigit(input)){
 			//set
-			set(input); // -> get set from set()
+			result = set(input); // -> get set from set()
 		}else{
 			//identifier -> getmemory
-			identifier(input);
+			result = getMemory(identifier(input).value());
 		}
-		return null;
+		return result;
 	}
 
-	void complexFactor(Scanner input) throws APException{
+	Set complexFactor(Scanner input) throws APException{
 		//complex factor = ’(’ expression ’)’
 		character(input,'(');
-		expression(input);
+		Set result = expression(input);
 		character(input, ')');
+		return result;
 	}
 
-	void set(Scanner input) throws APException{ //returns set
+	Set set(Scanner input) throws APException{ //returns set
 		//set = ’{’ row_natural_numbers ’}’ 
 		character(input, '{');
-		rowNaturalNumbers(input);
+		Set result = rowNaturalNumbers(input);
 		character(input, '}');
+		return result;
 	}
 
-	void rowNaturalNumbers(Scanner input) throws APException{//make set here
+	Set rowNaturalNumbers(Scanner input) throws APException{//make set here
 		//row natural numbers = [ natural number { ’,’ natural number } ]
-		if(nextCharIsDigit(input)){
-			naturalNumber(input);
-		}else{
-			//throw exception
+		Set result = new Set();
+		if(!nextCharIsDigit(input)){
+			throw new APException("Sets must consist of natural numbers");
 		}
 		while(nextCharIsDigit(input)){
-			naturalNumber(input);
+			result.add(naturalNumber(input));
 			character(input,',');
 		}
+		return result;
 	}
 
 	char additiveOperator(Scanner input) throws APException{
@@ -154,33 +172,58 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 		if(nextCharIs(input,'+') || nextCharIs(input,'|') || nextCharIs(input,'-')){
 			return nextChar(input);
 		}else{
-			throw new APException("additive operator invalid.");
+			throw new APException("Invalid additive operator.");
 		}
 	}
 
-	void multiplicativeOperator(Scanner input) throws APException{
+	char multiplicativeOperator(Scanner input) throws APException{
 		//multiplicative operator = ’∗’ ;
+		if(!nextCharIs(input,'*')) {
+			throw new APException("Invalidt multiplicative operator");
+		}else {
+			return '*';
+		}
 	}
 
-	void naturalNumber(Scanner input) throws APException{
+	BigInteger naturalNumber(Scanner input) throws APException{
 		//natural number = positive number | zero ;
+		String stringValue = "";
+		if(nextCharIs(input,'0')) {
+			stringValue += zero(input);
+		}else {
+			stringValue += notZero(input);
+		}
+		return new BigInteger(stringValue);
 	}
 
-	void positiveNumber(Scanner input) throws APException{
+	String positiveNumber(Scanner input) throws APException{
 		//positive number = not zero { number } ;
+		String result = "" + notZero(input);
+		while(nextCharIsDigit(input)) {
+			result += number(input);
+		}
+		return result;
 	}
 
-	BigInteger number(Scanner input) throws APException{
+	char number(Scanner input) throws APException{
 		//number = zero | not zero ;
-		return null;
+		return nextCharIs(input,'0')? zero(input): notZero(input);
 	}
 
-	void zero(Scanner input) throws APException{
+	char zero(Scanner input) throws APException{
 		//zero = ’0’ ;
+		if(!nextCharIs(input, '0')) throw new APException("A zero must be a zero");
+		return '0';
+		
 	}
 
-	void notZero(Scanner input) throws APException{
+	char notZero(Scanner input) throws APException{
 		//not zero = ’1’ | ’2’ | ’3’ | ’4’ | ’5’ | ’6’ | ’7’ | ’8’ | ’9’ ;
+		if(!input.hasNext("[1-9]")) {
+			throw new APException("A not_zero must be a number in range 1,2,3,4,5,6,7,8,9");
+		}else {
+			return nextChar(input);
+		}
 	}
 
 	char letter(Scanner input) throws APException{
@@ -206,7 +249,7 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 		//read next char or return exception if it is not c
 		if (! nextCharIs(input, c)) {
 			throw new APException("........");
-		}nextChar(input);
+		} nextChar(input);
 	}
 
 	// Method to read 1 character.
@@ -231,4 +274,8 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
     boolean nextCharIsLetter(Scanner in) {
         return in.hasNext("[a-zA-Z]");
     } 
+    
+    boolean nextCharIsAdditiveOperator(Scanner in) {
+    	return nextCharIs(in,'+') || nextCharIs(in,'|') || nextCharIs(in,'-');
+    }
 }
