@@ -62,10 +62,11 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 	
 	T assignment(Scanner input) throws APException{//stores the input in memory
 		//assignment = identifier ’=’ expression <eoln> ;
-		identifier(input);
-		skipSpaces(input);
+		Identifier identifier = identifier(input);
+		space(input);
 		character(input, '=');
-		expression(input);
+		T set  = expression(input);
+		
 		eoln(input);
 		return null;
 	}
@@ -293,9 +294,11 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
     	return nextCharIs(in,'+') || nextCharIs(in,'|') || nextCharIs(in,'-');
     }
     
-    void skipSpaces(Scanner in) {
+    void space(Scanner in) {
     	if (nextCharIs(in,' ')) {
     		nextChar(in);
+    	}else {
+    		throw new Exception("Space expected");
     	}
     }
 }
