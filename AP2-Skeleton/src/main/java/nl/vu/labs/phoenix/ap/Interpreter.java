@@ -23,7 +23,12 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 	public T getMemory(String v) {
 		// TODO Implement me
 		//needs more//check if it exists
-		return (T) storage.get(v); //error
+		if(storage.containsKey(v)) {
+			return (T) storage.get(v);
+		}else {
+			return null; //we would like to return an exception but this method was predefined
+		}
+		 //error
 	}
 
 	@Override
@@ -58,6 +63,7 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 	T assignment(Scanner input) throws APException{//stores the input in memory
 		//assignment = identifier ’=’ expression <eoln> ;
 		identifier(input);
+		skipSpaces(input);
 		character(input, '=');
 		expression(input);
 		eoln(input);
@@ -115,9 +121,8 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 					return (T) set1.difference(set2);
 			}
 			
-		}else {
-			return set1;
 		}
+		return set1;
 	}
 
 	T term(Scanner input) throws APException{
@@ -286,5 +291,11 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
     
     boolean nextCharIsAdditiveOperator(Scanner in) {
     	return nextCharIs(in,'+') || nextCharIs(in,'|') || nextCharIs(in,'-');
+    }
+    
+    void skipSpaces(Scanner in) {
+    	if (nextCharIs(in,' ')) {
+    		nextChar(in);
+    	}
     }
 }

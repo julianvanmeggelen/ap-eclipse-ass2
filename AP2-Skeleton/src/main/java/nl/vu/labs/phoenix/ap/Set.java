@@ -1,20 +1,27 @@
 package nl.vu.labs.phoenix.ap;
 
+import java.io.PrintStream;
+
 public class Set<T extends Comparable<T>> implements SetInterface<T> {
 
 	LinkedList list;
 	int amountOfElements;
-
+	PrintStream out;
+	
 	public Set(){
 		this.list = new LinkedList();
 		this.amountOfElements = 0;
+		out = new PrintStream(System.out);
 	}
 
 	@Override
 	public boolean add(T t){
 		// TODO Auto-generated method stub
 		//make sure not in the list
-		list.insert(t);
+		if(!list.find(t)) {
+			list.insert(t);
+			return true;
+		}
 		return false;
 	}
 
@@ -41,7 +48,7 @@ public class Set<T extends Comparable<T>> implements SetInterface<T> {
 
 	@Override
 	public SetInterface<T> copy() {
-		SetInterface<T> result = new Set();
+		Set result = new Set();
 		while(this.list.goToNext()) {
 			result.add(list.retrieve());//ask ruby
 		}
@@ -49,22 +56,19 @@ public class Set<T extends Comparable<T>> implements SetInterface<T> {
 	}
 
 	//implement 
-	public SetInterface<T> difference(SetInterface<T> secondSet) {
+	public SetInterface<T> difference(SetInterface<T> set2) {
 		SetInterface<T> result1 = this.copy();
+		Set secondSet = (Set) set2;
         while (secondSet.list.goToNext()) {
-            result1.remove(secondSet.get());
+            result1.remove((T) secondSet.get());
         }
         return result1;
     }
 	
   public SetInterface<T> union(SetInterface<T> secondSet) {
-	  	SetInterface<T> result = this.copy();
-        while (secondSet.list.goToNext()) {
-            try {
-                result.add(secondSet.retrieve());
-            } catch (Exception e) {
-                return e;//print errpr
-            }
+	  	SetInterface<T> result = secondSet.copy();
+        while (this.list.goToNext()) {
+        	result.add(this.get()); 
         }
         return result;
     }
@@ -85,9 +89,12 @@ public class Set<T extends Comparable<T>> implements SetInterface<T> {
         return result;
 	}
     
-    public boolean contains(T){
-    	
+    public boolean contains(T element){
+    	return list.find(element);
     }
     
-	
+    private LinkedList list() {
+    	return this.list;
+    }
+    
 }

@@ -16,25 +16,8 @@ package nl.vu.labs.phoenix.ap;
  *
  **/
 public interface SetInterface<T extends Comparable<T>> {
-	/*
-	* * constructors 
-    * * Set(); 
-    *       PRE  - 
-    *       POST -A new Set-object has been made and contains the empty set. 
 
 
-	/* 
-	 * [2] Mandatory methods. Make sure you do not modify these!
-	 * 	   -- Complete the specifications of these methods
-	 */
-	
-	/**
-	 * Hint:
-	 * @return
-	 * 	true  - element was inserted
-	 * 	false - element was already present 
-	 */
-	
 	boolean add(T t);/*
 		 PRE - 
 		 POST - true: - element was inserted
