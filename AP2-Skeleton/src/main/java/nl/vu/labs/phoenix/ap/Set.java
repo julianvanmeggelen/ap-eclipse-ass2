@@ -11,8 +11,9 @@ public class Set<T extends Comparable<T>> implements SetInterface<T> {
 	}
 
 	@Override
-	public boolean add(T t) {
+	public boolean add(T t){
 		// TODO Auto-generated method stub
+		//make sure not in the list
 		list.insert(t);
 		return false;
 	}
@@ -25,12 +26,12 @@ public class Set<T extends Comparable<T>> implements SetInterface<T> {
 
 	@Override
 	public boolean remove(T t) {
-		boolean found = false;
-		while(list.find(t)) {
+		
+		if(list.find(t)) {
 			list.remove();
-			found = true;
+			return true;
 		}
-		return found;
+		return false;
 	}
 
 	@Override
@@ -48,7 +49,7 @@ public class Set<T extends Comparable<T>> implements SetInterface<T> {
 	}
 
 	//implement 
-	public SetInterface<T> difference(Set secondSet) {
+	public SetInterface<T> difference(SetInterface<T> secondSet) {
 		SetInterface<T> result1 = this.copy();
         while (secondSet.list.goToNext()) {
             result1.remove(secondSet.get());
@@ -68,7 +69,7 @@ public class Set<T extends Comparable<T>> implements SetInterface<T> {
         return result;
     }
   
-    public SetInterface<T> intersection(Set secondSet) {
+    public SetInterface<T> intersection(SetInterface<T> secondSet) {
     	SetInterface<T> union = this.union(secondSet);
     	SetInterface<T> difference1 = this.difference(secondSet);
     	SetInterface<T> difference2 = secondSet.difference(this);
@@ -76,12 +77,17 @@ public class Set<T extends Comparable<T>> implements SetInterface<T> {
         result = result.difference(difference2);
         return result;
     }
-
-    public SetInterface<T> symmetricDifference(Set secondSet){
-        Set union = this.union(secondSet);
-        Set intersection = this.intersection(secondSet);
-        Set result = union.difference(intersection);
+    
+    public SetInterface<T> symmetricDifference(SetInterface<T> secondSet){
+    	SetInterface<T> union = this.union(secondSet);
+    	SetInterface<T> intersection = this.intersection(secondSet);
+    	SetInterface<T> result = union.difference(intersection);
         return result;
 	}
+    
+    public boolean contains(T){
+    	
+    }
+    
 	
 }

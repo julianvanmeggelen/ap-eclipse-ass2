@@ -1,7 +1,6 @@
 package nl.vu.labs.phoenix.ap;
 
-import java.math.BigInteger;
-
+import java.io.PrintStream;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -13,40 +12,50 @@ import java.util.regex.Pattern;
 public class Interpreter<T extends SetInterface<BigInteger>> implements InterpreterInterface<T> {
 	
 	HashMap<Identifier, Set<BigInteger> > storage; 
+	PrintStream out;
 
 	public Interpreter(){
 		storage = new HashMap<Identifier, Set<BigInteger>>();
+		out = new PrintStream(System.out);
 	}
 
 	@Override
 	public T getMemory(String v) {
 		// TODO Implement me
-		return storage.get(v.hashCode()); //error
+		//needs more//check if it exists
+		return (T) storage.get(v); //error
 	}
 
 	@Override
-	public T eval(String s) {
+	public T eval(String s) { //catch exceptions 
 		// TODO Implement me
 		Scanner stringScanner = new Scanner(s);
 		stringScanner.useDelimiter("");
-		return statement(stringScanner);
-	}
-
-	Set statement(Scanner input) throws APException{
-		//statement = assignment | print statement | comment ;
-		if(nextCharIs(input, '?')){
-			//statement is print statement
-			return printStatement(input);
-		}else if(nextCharIs(input, '/')){
-			//statement is comment
-			return comment(input);
-		}else{
-			//statement is assignment
-			return assignment(input);
+		try {
+			return statement(stringScanner);
+		}catch(APException e) {
+			out.println(e.getMessage());
+			return null;
 		}
 	}
 
-	Set assignment(Scanner input) throws APException{//stores the input in memory
+	T statement(Scanner input) throws APException{
+		//statement = assignment | print statement | comment ;
+		if(nextCharIs(input, '?')){  //constants
+			//statement is print statement
+			return printStatement(input);
+		}else if(nextCharIs(input, '/')){ //constants
+			//statement is comment
+			return comment(input);
+		}else if(nextCharIsLetter(input)){
+			//statement is assignment
+			return assignment(input);
+		}else {
+			throw new APException("");
+		}
+	}
+	
+	T assignment(Scanner input) throws APException{//stores the input in memory
 		//assignment = identifier ’=’ expression <eoln> ;
 		identifier(input);
 		character(input, '=');
@@ -55,15 +64,15 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 		return null;
 	}
 
-	Set printStatement(Scanner input) throws APException{//prints sets from memory
+	T printStatement(Scanner input) throws APException{//prints sets from memory
 		//print statement = ’?’ expression <eoln>
 		character(input, '?');
-		Set set = expression(input);
+		T set = expression(input);
 		eoln(input);
 		return set;
 	}
 
-	Set comment(Scanner input) throws APException{//does nothing
+	T comment(Scanner input) throws APException{//does nothing
 		//comment = ’/’ <a line of text> <eoln> ;
 		character(input, '/');
 		return null;
@@ -82,30 +91,28 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 			if(nextCharIsLetter(input)){
 				identifier.addCharacter(letter(input));
 			}else{
-				identifier.addCharacter((number(input));
+				identifier.addCharacter((number(input)));
 			}
 		}
 		return identifier;
 	}
 
-	Set expression(Scanner input) throws APException{
+	T expression(Scanner input) throws APException{
 		//expression = term { additive_operator term } ;
-		Set set1 = term(input);
+		T set1 = term(input);
 		if(nextCharIsAdditiveOperator(input)){
 			char operator = additiveOperator(input);
-			Set set2 = term(input);
+			T set2 = term(input);
 			switch (operator) {
-				case '+':
+				case '+': //constants
 					//union
-					return set1.union(set2);
+					return (T) set1.union(set2);
 				case '|':
 					//symmetric difference
-					return set1.symmetricDifference(set2);
-					break;
+					return (T) set1.symmetricDifference(set2);
 				case '-':
 					//difference
-					return set1.difference(set2);
-					break;
+					return (T) set1.difference(set2);
 			}
 			
 		}else {
@@ -113,19 +120,20 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 		}
 	}
 
-	Set term(Scanner input) throws APException{
+	T term(Scanner input) throws APException{
 		//term = factor { multiplicative_operator factor }
-		factor(input);
-		if(nextCharIs(input, '*')){
+		T set = factor(input);
+		if(nextCharIs(input, '*')){ //constant
 			multiplicativeOperator(input);
-			factor(input);
+			return (T) set.intersection(factor(input));
 		}
+		return set;
 	}
 
-	Set factor(Scanner input) throws APException{ //returns set
+	T factor(Scanner input) throws APException{ //returns set
 		//identifier | complex factor | set
-		Set result;
-		if(nextCharIs(input, '(')){
+		T result;
+		if(nextCharIs(input, '(')){//constant
 			//complex_factor
 			result = complexFactor(input);
 		}else if(nextCharIsDigit(input)){
@@ -133,28 +141,29 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 			result = set(input); // -> get set from set()
 		}else{
 			//identifier -> getmemory
-			result = getMemory(identifier(input).value());
+			Identifier identifier = identifier(input);
+			result = (T) storage.get(identifier.toString());  //get out of hashmap directly;
 		}
-		return result;
+		return (T) result;
 	}
 
-	Set complexFactor(Scanner input) throws APException{
+	T complexFactor(Scanner input) throws APException{
 		//complex factor = ’(’ expression ’)’
 		character(input,'(');
-		Set result = expression(input);
+		T result = expression(input);
 		character(input, ')');
 		return result;
 	}
 
-	Set set(Scanner input) throws APException{ //returns set
+	T set(Scanner input) throws APException{ //returns set
 		//set = ’{’ row_natural_numbers ’}’ 
 		character(input, '{');
-		Set result = rowNaturalNumbers(input);
+		T result = rowNaturalNumbers(input);
 		character(input, '}');
 		return result;
 	}
 
-	Set rowNaturalNumbers(Scanner input) throws APException{//make set here
+	T rowNaturalNumbers(Scanner input) throws APException{//make set here
 		//row natural numbers = [ natural number { ’,’ natural number } ]
 		Set result = new Set();
 		if(!nextCharIsDigit(input)){
@@ -164,7 +173,7 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 			result.add(naturalNumber(input));
 			character(input,',');
 		}
-		return result;
+		return (T) result;
 	}
 
 	char additiveOperator(Scanner input) throws APException{

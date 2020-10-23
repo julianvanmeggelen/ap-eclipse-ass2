@@ -32,7 +32,7 @@ public interface IdentifierInterface {
 		PRE - the identifier's string value is defined.
 		POST - the identifier's string value has been returned.
 	
-	*/void init (char c);/* 
+	*/IdentifierInterface init (char c);/* 
         PRE  - c is a letter  
         POST - The Identier has the value c. The size is 1. 
 
@@ -45,7 +45,7 @@ public interface IdentifierInterface {
         PRE -
         POST - The size of the Identifier, i.e the number of characters, has been returned.
 
-    */void addCharacter (char c);/* 
+    */IdentifierInterface addCharacter (char c);/* 
         PRE  - the character is alphanumeric
         POST - the character has been added to the back of the value of the Identifier.
 
@@ -56,6 +56,7 @@ public interface IdentifierInterface {
     */int hashCode();/*
         PRE - 
         POST - The hashcode has been returned.
+    
     */
 }
 

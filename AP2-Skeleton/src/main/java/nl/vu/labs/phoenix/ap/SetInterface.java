@@ -76,7 +76,7 @@ public interface SetInterface<T extends Comparable<T>> {
 		PRE - 
 		POST - the intersection of this and set2 has been returned.
 
-	*/SetInterface<T> symmetricdifference(SetInterface<T> set2);/*
+	*/SetInterface<T> symmetricDifference(SetInterface<T> set2);/*
 		PRE - 
 		POST -the symmetric differnce of this and set2 had been returned.
 	*/
