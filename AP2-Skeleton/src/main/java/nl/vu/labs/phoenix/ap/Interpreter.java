@@ -28,7 +28,6 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 		}else {
 			return null; //we would like to return an exception but this method was predefined
 		}
-		 //error
 	}
 
 	@Override
@@ -45,7 +44,8 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 	}
 
 	T statement(Scanner input) throws APException{
-		//statement = assignment | print statement | comment ;
+		//statement = assignment | print statement | comment 
+		spaces(input);
 		if(nextCharIs(input, '?')){  //constants
 			//statement is print statement
 			return printStatement(input);
@@ -63,18 +63,23 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 	T assignment(Scanner input) throws APException{//stores the input in memory
 		//assignment = identifier ’=’ expression <eoln> ;
 		Identifier identifier = identifier(input);
-		space(input);
+		spaces(input);
 		character(input, '=');
-		T set  = expression(input);
-		
+		spaces(input);
+		Set set  = (Set) expression(input);
+		spaces(input);
 		eoln(input);
+		//syntax correct -> store in memory
+		storage.put(identifier, set);
 		return null;
 	}
 
 	T printStatement(Scanner input) throws APException{//prints sets from memory
 		//print statement = ’?’ expression <eoln>
 		character(input, '?');
+		spaces(input);
 		T set = expression(input);
+		spaces (input);
 		eoln(input);
 		return set;
 	}
@@ -101,14 +106,18 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 				identifier.addCharacter((number(input)));
 			}
 		}
+		out.println(identifier.value());
 		return identifier;
 	}
 
 	T expression(Scanner input) throws APException{
 		//expression = term { additive_operator term } ;
 		T set1 = term(input);
+		spaces(input);
 		if(nextCharIsAdditiveOperator(input)){
+			spaces(input);
 			char operator = additiveOperator(input);
+			spaces(input);
 			T set2 = term(input);
 			switch (operator) {
 				case '+': //constants
@@ -129,8 +138,10 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 	T term(Scanner input) throws APException{
 		//term = factor { multiplicative_operator factor }
 		T set = factor(input);
+		spaces(input);
 		if(nextCharIs(input, '*')){ //constant
 			multiplicativeOperator(input);
+			spaces(input);
 			return (T) set.intersection(factor(input));
 		}
 		return set;
@@ -141,14 +152,17 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 		T result;
 		if(nextCharIs(input, '(')){//constant
 			//complex_factor
+			spaces(input);
 			result = complexFactor(input);
 		}else if(nextCharIsDigit(input)){
 			//set
 			result = set(input); // -> get set from set()
-		}else{
+		}else if (nextCharIsLetter(input)){
 			//identifier -> getmemory
 			Identifier identifier = identifier(input);
-			result = (T) storage.get(identifier.toString());  //get out of hashmap directly;
+			result = (T) storage.get(identifier);  //get out of hashmap directly;
+		}else {
+			throw new APException("Incorrect syntax in factor.");
 		}
 		return (T) result;
 	}
@@ -156,7 +170,9 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 	T complexFactor(Scanner input) throws APException{
 		//complex factor = ’(’ expression ’)’
 		character(input,'(');
+		spaces(input);
 		T result = expression(input);
+		spaces(input);
 		character(input, ')');
 		return result;
 	}
@@ -164,7 +180,9 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 	T set(Scanner input) throws APException{ //returns set
 		//set = ’{’ row_natural_numbers ’}’ 
 		character(input, '{');
+		spaces(input);
 		T result = rowNaturalNumbers(input);
+		spaces(input);
 		character(input, '}');
 		return result;
 	}
@@ -176,7 +194,9 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
 			throw new APException("Sets must consist of natural numbers");
 		}
 		while(nextCharIsDigit(input)){
+			spaces(input);
 			result.add(naturalNumber(input));
+			spaces(input);
 			character(input,',');
 		}
 		return (T) result;
@@ -294,11 +314,9 @@ public class Interpreter<T extends SetInterface<BigInteger>> implements Interpre
     	return nextCharIs(in,'+') || nextCharIs(in,'|') || nextCharIs(in,'-');
     }
     
-    void space(Scanner in) {
-    	if (nextCharIs(in,' ')) {
+    void spaces(Scanner in) throws APException{
+    	while (nextCharIs(in,' ')) {
     		nextChar(in);
-    	}else {
-    		throw new Exception("Space expected");
     	}
     }
 }

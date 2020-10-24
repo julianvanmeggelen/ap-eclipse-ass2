@@ -4,6 +4,7 @@ import org.junit.*;
 
 
 import java.io.PrintStream;
+import java.util.Scanner;
 
 public class test {
 	PrintStream out;
@@ -12,10 +13,12 @@ public class test {
 	}
 	
 	void start() {
-		LinkedList<Integer> list = new LinkedList<>();
-		out.print(list.size());
-		list.insert(5);
-		out.print(list.size());
+		Scanner scan = new Scanner("a b c d e f g h").useDelimiter("");
+		scan.skip(" ");
+		while(scan.hasNext()) {
+			out.print(scan.next());
+		}
+		
 	}
 	
 	public static void main(String[] args) {
