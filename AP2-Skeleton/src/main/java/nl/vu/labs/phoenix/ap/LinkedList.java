@@ -82,33 +82,33 @@ public class LinkedList<E extends Comparable<E>> implements ListInterface<E> {
 	@Override
 	public ListInterface<E> remove() {
 
-		if (size == 1) {
-			this.init();
-			return null;
+		if (isEmpty()) {
+			return this;
 		}
-
-		if (current.prior != null) { // if current has element before
-			current.prior.next = current.next;
-		}
-		if (current.next != null) {// if current has element after
-			current.next.prior = current.prior;
-		}
-
-		if (current.next != null) {
-			current = current.next;
+		if (size() == 1) {
+			current = list = last = new Node(null);
+		} else if (current == list) {
+			current = list = current.next;
+			current.prior = null;
+		} else if (current == last) {
+			current = last = current.prior;
+			current.next = null;
 		} else {
-			current = current.prior;
+			current.next.prior = current.prior;
+			current = current.prior.next = current.next;
 		}
+
 		size--;
-		return null;
+		return this;
 	}
 
 	@Override
 	public boolean find(E d) {
+		if(size == 0) return false;
 		current = d.compareTo(current.data)<0? list: current;
-		while (goToNext()) {
-			if (current.data.compareTo(d) != 0) return true;
-		}
+		do{
+			if (current.data.compareTo(d) == 0) return true;
+		}while (goToNext());
 		return false;
 	}
 

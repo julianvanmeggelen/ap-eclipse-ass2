@@ -50,7 +50,7 @@ public interface IdentifierInterface {
         POST - the character has been added to the back of the value of the Identifier.
 
     */char getCharAtIndex(int i);/*
-        PRE - A character at index i is defined. I has to be greater or equal to 0 and smaller than size().
+        PRE - A character at index i is defined. i has to be greater or equal to 0 and smaller than size().
         POST - The character at index i has been returned.
     
     */int hashCode();/*
